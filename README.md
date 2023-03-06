@@ -4,9 +4,10 @@ The readers-writers problem is a classical problem of process synchronization wh
 - Readers: They can only read the data set and cannot change it
 - Writers: They can read and update the data set
 
-The immediate solution to this problem can resut in starvation of either writers or readers in the queue. Below is the implementation of Starve-Free readers writers solution where no reader and writer is allowed to starve.
+The objective is to allow multiple readers to access the dataset simultaneously while only a single writer can update the data set at a time.
+The immediate solution to this problem gives priority to either readers or writers. Thus, it can resut in starvation of either writers or readers in the queue respectively. Below is the implementation of Starve-Free readers writers solution where no reader and writer is allowed to wait indefinitely for a resource.
 
-## Commonly used Starve-Free solution
+## Starve-Free solution
 
 ### Initialisation of Global Variables 
 ```
@@ -78,19 +79,20 @@ The processes must wait in a queue before `in_mx` allows a process to enter the 
 There will be progress as long as execution times of all the processes' are finite, as they will continue to execute after waiting in the queue. The given solution will not enter a state of deadlock.
 
 
-
 ## More optimized Starve-Free Solution
+The essential idea is that a Writer informs Readers of their need to enter the working space. Also, no new Readers can begin working at this time. Once a reader starts executing it increments variable `cnt_in`. Each Reader which leaves the working area increments variable `cnt_out` and checks to see if a Writer is waiting. When the final Reader is to leave then `cnt_in` will be equal to `cnt_out` and alerts the Writer that it is safe to move further by giving semaphore `rw_mx`.
 
+The writers wait on `in_mx` and `out_mx`. After acquiring both semaphores, the writes compare the value of `cnt_in` and `cnt_out`. If it is equal then no readers are executing in their critical section annd writer will continue to its critical section. If it is not equal then it waits for all readers processes to complete execution and turn `wrt_wait` to true to show that a writer process is waiting in queue. Once it gets `rw_mx` it proceeds to its critical section and changes   wrt_wait` to false. After access to the working area by writer is complete, the writer notifies any waiting readers that they are now able to access the working area once more.
 ### Initialisation of Global Variables 
 ```
 in_mx = Semaphore(1)
-out_mx = Semaphore(1)
-rw_mx = Semaphore(0)
+out_mx = Semaphore(1) 
+rw_mx = Semaphore(0) //Semaphore to write
 
-int cnt_in = 0
-int cnt_out = 0
+int cnt_in = 0 // Number of readers who have already started reading
+int cnt_out = 0 // Number of readers who have completed reading
 
-boolean wrt_wait = 0
+boolean wrt_wait = false // Shows if a writer is waiting
 ```
 
 ### Implementation (Reader)
@@ -147,7 +149,7 @@ while (true) {
 
 ### Mutual Exclusion
 - `in_mx`: ensures mutual exclusion among all processes.
-- `out_mx`: ensures mutual exclusion for variables `cnt_in` and `cnt_out. 
+- `out_mx`: ensures mutual exclusion for variables `cnt_in` and `cnt_out`. 
 - `rw_mx`: ensures mutual exclusion between readers and waiting writer. 
 
 
