@@ -8,6 +8,7 @@ The objective is to allow multiple readers to access the dataset simultaneously 
 The immediate solution to this problem gives priority to either readers or writers. Thus, it can resut in starvation of either writers or readers in the queue respectively. Below is the implementation of Starve-Free readers writers solution where no reader and writer is allowed to wait indefinitely for a resource.
 
 ## Starve-Free solution
+Only Processes with `in_mx` can enter working space. Since, all processes will then be pushed into FIFO queue of in_mx sempahore, reader processes that come after writers will be executed later. Hence, this solution is starve-free. Readers and writers are queued by calling `wait()` function on semaphore `in_mx`.
 
 ### Initialisation of Global Variables 
 ```
@@ -80,6 +81,8 @@ There will be progress as long as execution times of all the processes' are fini
 
 
 ## More optimized Starve-Free Solution
+This solution is similar to above solution with an optimisation in reader implementation.
+
 The essential idea is that a Writer informs Readers of their need to enter the working space. Also, no new Readers can begin working at this time. Once a reader starts executing it increments variable `cnt_in`. Each Reader which leaves the working area increments variable `cnt_out` and checks to see if a Writer is waiting. When the final Reader is to leave then `cnt_in` will be equal to `cnt_out` and alerts the Writer that it is safe to move further by giving semaphore `rw_mx`.
 
 The writers wait on `in_mx` and `out_mx`. After acquiring both semaphores, the writes compare the value of `cnt_in` and `cnt_out`. If it is equal then no readers are executing in their critical section annd writer will continue to its critical section. If it is not equal then it waits for all readers processes to complete execution and turn `wrt_wait` to true to show that a writer process is waiting in queue. Once it gets `rw_mx` it proceeds to its critical section and changes   wrt_wait` to false. After access to the working area by writer is complete, the writer notifies any waiting readers that they are now able to access the working area once more.
