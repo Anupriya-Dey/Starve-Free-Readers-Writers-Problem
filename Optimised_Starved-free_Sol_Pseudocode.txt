@@ -1,0 +1,58 @@
+//Initialisation of Global Variables
+
+in_mx = Semaphore(1)
+out_mx = Semaphore(1) 
+rw_mx = Semaphore(0) //Semaphore to write
+
+int cnt_in = 0 // Number of readers that have started reading
+int cnt_out = 0 // Number of readers that have completed reading
+
+boolean wrt_wait = false // Shows if a writer is waiting
+
+
+//Implementation (Reader)
+while(true) {
+
+    //Entry Section
+    wait(in_mx)
+    cnt_in++
+    signal(in_mx)
+    
+    /*
+        *Critical Section
+    */
+    
+    //Exit Section
+    wait(out_mx)
+    cnt_out++
+    if (wrt_wait == 1 && cnt_in == cnt_out)
+        signal(rw_mx);
+    signal(out_mx)
+
+    //Remainder Section
+}
+
+
+//Implementation (Writer)
+while (true) {
+
+    //Entry Section
+    wait(in_mx)
+    wait(out_mx)    
+    if (cnt_in == cnt_out)
+        signal(out_mx);        
+    else
+        wait = 1;
+        signal(out_mx)
+        wait(rw_mx)
+        wait = 0
+        
+    /*
+        *Critical Section
+    */
+    
+    //Exit Section
+    signal(in_mx)
+    
+    //Remainder Section
+}
